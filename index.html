@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Downloader Pro</title>
+
+  <!-- 👇 Pega aquí, sin modificar, el script que te dé Monetag (Parte E) -->
+
+  <style>
+    body {
+      font-family: -apple-system, sans-serif;
+      background: #0e1621;
+      color: white;
+      text-align: center;
+      padding-top: 60px;
+      margin: 0;
+    }
+    h2 { font-size: 20px; }
+    #continueBtn {
+      display: none;
+      margin-top: 24px;
+      font-size: 18px;
+      padding: 14px 28px;
+      background: #2AABEE;
+      color: white;
+      text-decoration: none;
+      border-radius: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h2 id="waitingText">Wait 5 seconds...</h2>
+  <p id="subText">Your video is being prepared</p>
+  <a id="continueBtn" href="#">Continue</a>
+
+  <script>
+    const TEXT = {
+      en: { waiting: n => `Wait ${n} seconds...`, sub: "Your video is being prepared", button: "Continue" },
+      es: { waiting: n => `Espera ${n} segundos...`, sub: "Tu video se está preparando", button: "Continuar" },
+    };
+
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get("token");
+    const lang = params.get("lang") || "en";
+    const botUsername = "videott_pro_bot"; // 👈 pon tu username real, sin @
+    const strings = TEXT[lang] || TEXT.en;
+
+    let seconds = 5;
+    const waitingEl = document.getElementById("waitingText");
+    const subEl = document.getElementById("subText");
+    waitingEl.innerText = strings.waiting(seconds);
+    subEl.innerText = strings.sub;
+
+    const interval = setInterval(() => {
+      seconds--;
+      if (seconds > 0) {
+        waitingEl.innerText = strings.waiting(seconds);
+      } else {
+        clearInterval(interval);
+        waitingEl.style.display = "none";
+        subEl.style.display = "none";
+        const btn = document.getElementById("continueBtn");
+        btn.innerText = strings.button;
+        btn.style.display = "inline-block";
+        btn.href = `https://t.me/${botUsername}?start=verify_${token}`;
+      }
+    }, 1000);
+  </script>
+</body>
+</html>
