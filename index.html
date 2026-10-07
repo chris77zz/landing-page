@@ -16,10 +16,10 @@
 </head>
 <body>
   <script>
-    if (window.Telegram && window.Telegram.WebApp) {
-      Telegram.WebApp.ready();
-      Telegram.WebApp.expand();
-    }
+   if (window.Telegram && window.Telegram.WebApp) {
+  Telegram.WebApp.ready();
+  Telegram.WebApp.expand();
+}
 
     const params = new URLSearchParams(window.location.search);
     const token = params.get("token");
