@@ -9,29 +9,10 @@
   <script src='//libtl.com/sdk.js' data-zone='11971068' data-sdk='show_11971068'></script>
 
   <style>
-    body {
-      margin: 0;
-      background: transparent;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      min-height: 100vh;
-    }
-    #continueLink {
-      display: none;
-      font-family: -apple-system, sans-serif;
-      font-size: 17px;
-      padding: 12px 24px;
-      background: #2AABEE;
-      color: white;
-      text-decoration: none;
-      border-radius: 10px;
-    }
+    body { margin: 0; background: transparent; }
   </style>
 </head>
 <body>
-  <a id="continueLink" href="#">Continue</a>
-
   <script>
     if (window.Telegram && window.Telegram.WebApp) {
       Telegram.WebApp.ready();
@@ -43,23 +24,23 @@
 
     const params = new URLSearchParams(window.location.search);
     const token = params.get("token");
-    const botUsername = "videott_pro_bot"; // confirma que sea tu username real
+    const botUsername = "VideoDL_Pro_bot"; // confirma que sea tu username real
 
-    const link = document.getElementById("continueLink");
-    link.href = `https://t.me/${botUsername}?start=verify_${token}`;
-
-    function revealLink() {
-      link.style.display = "inline-block";
+    let redirected = false;
+    function goBackToBot() {
+      if (redirected) return; // evita doble disparo si .then() y el respaldo coinciden
+      redirected = true;
+      window.location.href = `https://t.me/${botUsername}?start=verify_${token}`;
     }
 
-    const fallbackTimer = setTimeout(revealLink, 20000);
+    const fallbackTimer = setTimeout(goBackToBot, 20000);
 
     show_11971068().then(() => {
       clearTimeout(fallbackTimer);
-      revealLink();
+      goBackToBot();
     }).catch(() => {
       clearTimeout(fallbackTimer);
-      revealLink();
+      goBackToBot();
     });
   </script>
 </body>
