@@ -5,39 +5,61 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Downloader Pro</title>
 
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <script src='//libtl.com/sdk.js' data-zone='11971068' data-sdk='show_11971068'></script>
 
-  <!-- Si ya tenías esta etiqueta pegada con otro contenido exacto, deja la tuya tal cual y no la reemplaces -->
-  <script src="https://domain.com/sdk.js" data-zone="11971068" data-sdk="show_11971068"></script>
-
   <style>
-    body { margin: 0; background: transparent; }
+    body {
+      margin: 0;
+      background: transparent;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+    }
+    #continueLink {
+      display: none;
+      font-family: -apple-system, sans-serif;
+      font-size: 17px;
+      padding: 12px 24px;
+      background: #2AABEE;
+      color: white;
+      text-decoration: none;
+      border-radius: 10px;
+    }
   </style>
 </head>
 <body>
+  <a id="continueLink" href="#">Continue</a>
+
   <script>
-   if (window.Telegram && window.Telegram.WebApp) {
-  Telegram.WebApp.ready();
-  Telegram.WebApp.expand();
-}
+    if (window.Telegram && window.Telegram.WebApp) {
+      Telegram.WebApp.ready();
+      Telegram.WebApp.expand();
+      if (Telegram.WebApp.requestFullscreen) {
+        Telegram.WebApp.requestFullscreen();
+      }
+    }
 
     const params = new URLSearchParams(window.location.search);
     const token = params.get("token");
-    const botUsername = "videodl_pro_bot"; // tu username real, sin @
+    const botUsername = "videott_pro_bot"; // confirma que sea tu username real
 
-    function goBackToBot() {
-      window.location.href = `https://t.me/${botUsername}?start=verify_${token}`;
+    const link = document.getElementById("continueLink");
+    link.href = `https://t.me/${botUsername}?start=verify_${token}`;
+
+    function revealLink() {
+      link.style.display = "inline-block";
     }
 
-    // Respaldo: si el anuncio nunca responde, no dejamos al usuario atascado para siempre.
-    const fallbackTimer = setTimeout(goBackToBot, 20000);
+    const fallbackTimer = setTimeout(revealLink, 20000);
 
     show_11971068().then(() => {
       clearTimeout(fallbackTimer);
-      goBackToBot();
+      revealLink();
     }).catch(() => {
       clearTimeout(fallbackTimer);
-      goBackToBot();
+      revealLink();
     });
   </script>
 </body>
