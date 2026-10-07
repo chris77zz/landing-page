@@ -5,14 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Downloader Pro</title>
 
-  <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <script>(function(s){s.dataset.zone='11934735',s.src='https://n6wxm.com/vignette.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))</script>
+  <script src='//libtl.com/sdk.js' data-zone='11971068' data-sdk='show_11971068'></script>
+
+  <!-- Si ya tenías esta etiqueta pegada con otro contenido exacto, deja la tuya tal cual y no la reemplaces -->
+  <script src="https://domain.com/sdk.js" data-zone="11971068" data-sdk="show_11971068"></script>
 
   <style>
-    body {
-      margin: 0;
-      background: transparent;
-    }
+    body { margin: 0; background: transparent; }
   </style>
 </head>
 <body>
@@ -26,11 +25,20 @@
     const token = params.get("token");
     const botUsername = "videodl_pro_bot"; // tu username real, sin @
 
-    const AD_WAIT_MS = 5000;
-
-    setTimeout(() => {
+    function goBackToBot() {
       window.location.href = `https://t.me/${botUsername}?start=verify_${token}`;
-    }, AD_WAIT_MS);
+    }
+
+    // Respaldo: si el anuncio nunca responde, no dejamos al usuario atascado para siempre.
+    const fallbackTimer = setTimeout(goBackToBot, 20000);
+
+    show_11971068().then(() => {
+      clearTimeout(fallbackTimer);
+      goBackToBot();
+    }).catch(() => {
+      clearTimeout(fallbackTimer);
+      goBackToBot();
+    });
   </script>
 </body>
 </html>
