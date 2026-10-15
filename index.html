@@ -2,66 +2,46 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Downloader Pro</title>
 
-  <link rel="preconnect" href="https://libtl.com">
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <script src='//libtl.com/sdk.js' data-zone='11971068' data-sdk='show_11971068'></script>
 
   <style>
-    html, body { margin: 0; height: 100%; background: var(--tg-theme-bg-color, #0e1621); }
-    .spinner {
-      width: 34px; height: 34px; border-radius: 50%;
-      border: 3px solid rgba(255, 255, 255, .18); border-top-color: #2AABEE;
-      position: absolute; top: 50%; left: 50%; margin: -17px 0 0 -17px;
-      animation: spin .8s linear infinite;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
+    body { margin: 0; background: transparent; }
   </style>
 </head>
 <body>
-  <div class="spinner"></div>
-
   <script>
-    const tg = window.Telegram && window.Telegram.WebApp;
-    if (tg) {
-      tg.ready();
-      tg.expand();
-      if (tg.requestFullscreen) { try { tg.requestFullscreen(); } catch (e) {} }
-    }
-
-    const params = new URLSearchParams(window.location.search);
-    const token = params.get("token") || "";
-    const BOT_USERNAME = "videott_pro_bot";   // sin @
-    const AD_SECONDS = 15;                    // 1 segundo menos que el contador del anuncio
-
-    let finished = false;
-    function finish() {
-      if (finished) return;
-      finished = true;
-      const link = `https://t.me/${BOT_USERNAME}?start=verify_${token}`;
-      if (tg && tg.openTelegramLink) {
-        tg.openTelegramLink(link);
-        setTimeout(() => {
-          if (tg.disableClosingConfirmation) tg.disableClosingConfirmation();
-          tg.close();
-        }, 300);
-      } else {
-        window.location.href = link;
+    if (window.Telegram && window.Telegram.WebApp) {
+      Telegram.WebApp.ready();
+      Telegram.WebApp.expand();
+      if (Telegram.WebApp.requestFullscreen) {
+        Telegram.WebApp.requestFullscreen();
       }
     }
 
-    // Respaldo general: si algo se cuelga, no dejamos al usuario atrapado.
-    setTimeout(finish, 45000);
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get("token");
+    const botUsername = "VideoDL_Pro_bot"; // confirma que sea tu username real
 
-    try {
-      show_11971068({ type: "start", ymid: token, timeout: 12 })
-        .then(() => setTimeout(finish, AD_SECONDS * 1000))
-        .catch(finish);
-    } catch (e) {
-      finish();
+    let redirected = false;
+    function goBackToBot() {
+      if (redirected) return; // evita doble disparo si .then() y el respaldo coinciden
+      redirected = true;
+      window.location.href = `https://t.me/${botUsername}?start=verify_${token}`;
     }
+
+    const fallbackTimer = setTimeout(goBackToBot, 20000);
+
+    show_11971068().then(() => {
+      clearTimeout(fallbackTimer);
+      goBackToBot();
+    }).catch(() => {
+      clearTimeout(fallbackTimer);
+      goBackToBot();
+    });
   </script>
 </body>
 </html>
