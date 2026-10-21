@@ -40,8 +40,6 @@
     const params = new URLSearchParams(window.location.search);
     const token = params.get("token") || "";
     const BOT_USERNAME = "videott_pro_bot";   // sin @
-    const AD_SECONDS = 14;                    // 1 segundo menos que el contador del anuncio
-
     let finished = false;
     function finish() {
       if (finished) return;
@@ -66,8 +64,8 @@
     }
 
     try {
-      show_11971068({ type: "start", ymid: token, timeout: 12 })
-        .then(() => setTimeout(finish, AD_SECONDS * 1000))
+      show_11971068({ type: "end", ymid: token, timeout: 12 })
+        .then(finish)
         .catch(failAd);
     } catch (e) {
       failAd();
