@@ -33,7 +33,6 @@
 
     const params = new URLSearchParams(window.location.search);
     const token = params.get("token") || "";
-    const BOT_USERNAME = "videott_pro_bot";   // sin @
     let finished = false;
     function finish() {
       if (finished) return;
@@ -42,16 +41,11 @@
         return;
       }
       finished = true;
-      const link = `https://t.me/${BOT_USERNAME}?start=verify_${token}`;
-      if (tg && tg.openTelegramLink) {
-        tg.openTelegramLink(link);
-        setTimeout(() => {
-          if (tg.disableClosingConfirmation) tg.disableClosingConfirmation();
-          tg.close();
-        }, 1000);
-      } else {
-        window.location.href = link;
-      }
+      // Monetag avisa al bot por postback; la Mini App solo debe cerrarse.
+      setTimeout(() => {
+        if (tg && tg.disableClosingConfirmation) tg.disableClosingConfirmation();
+        if (tg && tg.close) tg.close();
+      }, 1000);
     }
 
     function failAd() {
