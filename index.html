@@ -17,11 +17,17 @@
       position: absolute; top: 50%; left: 50%; margin: -17px 0 0 -17px;
       animation: spin .8s linear infinite;
     }
+    .ad-error {
+      display: none; position: absolute; top: 58%; left: 8%; right: 8%;
+      color: var(--tg-theme-text-color, #fff); text-align: center;
+      font: 16px/1.5 sans-serif;
+    }
     @keyframes spin { to { transform: rotate(360deg); } }
   </style>
 </head>
 <body>
   <div class="spinner"></div>
+  <p id="ad-error" class="ad-error">The ad could not be verified. Please close this page and try again later.</p>
 
   <script>
     const tg = window.Telegram && window.Telegram.WebApp;
@@ -52,15 +58,19 @@
       }
     }
 
-    // Respaldo general: si algo se cuelga, no dejamos al usuario atrapado.
-    setTimeout(finish, 45000);
+    function failAd() {
+      if (finished) return;
+      finished = true;
+      document.querySelector(".spinner").style.display = "none";
+      document.getElementById("ad-error").style.display = "block";
+    }
 
     try {
       show_11971068({ type: "start", ymid: token, timeout: 12 })
         .then(() => setTimeout(finish, AD_SECONDS * 1000))
-        .catch(finish);
+        .catch(failAd);
     } catch (e) {
-      finish();
+      failAd();
     }
   </script>
 </body>
