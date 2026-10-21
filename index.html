@@ -34,7 +34,9 @@
     const params = new URLSearchParams(window.location.search);
     const token = params.get("token") || "";
     const BOT_USERNAME = "videott_pro_bot";
-    const AD_SECONDS = 5;
+    // Monetag muestra un contador obligatorio de 15 segundos. Esperamos un
+    // segundo adicional antes de volver al bot.
+    const AD_SECONDS = 16;
     let finished = false;
     function finish() {
       if (finished) return;
