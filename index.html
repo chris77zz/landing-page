@@ -39,20 +39,20 @@
 
     const params = new URLSearchParams(window.location.search);
     const token = params.get("token") || "";
-    const BOT_USERNAME = "videott_pro_bot";   // sin @
     let finished = false;
     function finish() {
       if (finished) return;
+      if (!token || !tg || typeof tg.sendData !== "function") {
+        failAd();
+        return;
+      }
       finished = true;
-      const link = `https://t.me/${BOT_USERNAME}?start=verify_${token}`;
-      if (tg && tg.openTelegramLink) {
-        tg.openTelegramLink(link);
-        setTimeout(() => {
-          if (tg.disableClosingConfirmation) tg.disableClosingConfirmation();
-          tg.close();
-        }, 300);
-      } else {
-        window.location.href = link;
+      try {
+        // sendData entrega el token al bot y Telegram cierra esta Mini App.
+        tg.sendData(JSON.stringify({ action: "ad_completed", token }));
+      } catch (e) {
+        finished = false;
+        failAd();
       }
     }
 
