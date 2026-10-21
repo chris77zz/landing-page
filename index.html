@@ -33,18 +33,25 @@
 
     const params = new URLSearchParams(window.location.search);
     const token = params.get("token") || "";
+    const botUsername = params.get("bot") || "";
     let finished = false;
     function finish() {
       if (finished) return;
-      if (!token) {
+      if (!token || !botUsername) {
         failAd();
         return;
       }
       finished = true;
-      // Monetag avisa al bot por postback; la Mini App solo debe cerrarse.
+      // Al terminar el anuncio, Telegram vuelve al bot con el token de esta solicitud.
       setTimeout(() => {
         if (tg && tg.disableClosingConfirmation) tg.disableClosingConfirmation();
-        if (tg && tg.close) tg.close();
+        const returnUrl = `https://t.me/${botUsername}?start=verify_${encodeURIComponent(token)}`;
+        if (tg && tg.openTelegramLink) {
+          tg.openTelegramLink(returnUrl);
+          setTimeout(() => tg.close && tg.close(), 150);
+        } else {
+          window.location.href = returnUrl;
+        }
       }, 1000);
     }
 
