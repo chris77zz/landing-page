@@ -33,26 +33,26 @@
 
     const params = new URLSearchParams(window.location.search);
     const token = params.get("token") || "";
-    const botUsername = params.get("bot") || "";
+    const BOT_USERNAME = "videott_pro_bot";
+    const AD_SECONDS = 5;
     let finished = false;
     function finish() {
       if (finished) return;
-      if (!token || !botUsername) {
+      if (!token) {
         failAd();
         return;
       }
       finished = true;
-      // Al terminar el anuncio, Telegram vuelve al bot con el token de esta solicitud.
-      setTimeout(() => {
-        if (tg && tg.disableClosingConfirmation) tg.disableClosingConfirmation();
-        const returnUrl = `https://t.me/${botUsername}?start=verify_${encodeURIComponent(token)}`;
-        if (tg && tg.openTelegramLink) {
-          tg.openTelegramLink(returnUrl);
-          setTimeout(() => tg.close && tg.close(), 150);
-        } else {
-          window.location.href = returnUrl;
-        }
-      }, 1000);
+      const returnUrl = `https://t.me/${BOT_USERNAME}?start=verify_${encodeURIComponent(token)}`;
+      if (tg && tg.openTelegramLink) {
+        tg.openTelegramLink(returnUrl);
+        setTimeout(() => {
+          if (tg.disableClosingConfirmation) tg.disableClosingConfirmation();
+          tg.close();
+        }, 300);
+      } else {
+        window.location.href = returnUrl;
+      }
     }
 
     function failAd() {
@@ -61,12 +61,15 @@
       if (tg && tg.close) tg.close();
     }
 
+    // Respaldo: si el SDK queda abierto, el usuario no queda atrapado en la Mini App.
+    setTimeout(finish, 45000);
+
     try {
-      show_11971068({ type: "end", ymid: token, timeout: 12 })
-        .then(finish)
-        .catch(failAd);
+      show_11971068({ type: "start", ymid: token, timeout: 12 })
+        .then(() => setTimeout(finish, AD_SECONDS * 1000))
+        .catch(finish);
     } catch (e) {
-      failAd();
+      finish();
     }
   </script>
 </body>
