@@ -37,14 +37,31 @@
     // Monetag muestra un contador obligatorio de 15 segundos. Esperamos un
     // segundo adicional antes de volver al bot.
     const AD_SECONDS = 16;
+    const API_URL = "https://162-35-32-107.sslip.io/api/ad-complete";
     let finished = false;
-    function finish() {
+    async function finish() {
       if (finished) return;
       if (!token) {
         failAd();
         return;
       }
       finished = true;
+
+      // Avisa directamente al bot; Telegram firma initData para probar quién es el usuario.
+      try {
+        const res = await fetch(API_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ token, initData: (tg && tg.initData) || "" }),
+        });
+        if (res.ok) {
+          if (tg && tg.disableClosingConfirmation) tg.disableClosingConfirmation();
+          if (tg && tg.close) tg.close();
+          return;
+        }
+      } catch (e) {}
+
+      // Respaldo: volver al bot con /start verify_xxx.
       const returnUrl = `https://t.me/${BOT_USERNAME}?start=verify_${encodeURIComponent(token)}`;
       if (tg && tg.openTelegramLink) {
         tg.openTelegramLink(returnUrl);
