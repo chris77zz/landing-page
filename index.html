@@ -10,34 +10,204 @@
   <script src='//libtl.com/sdk.js' data-zone='11971068' data-sdk='show_11971068'></script>
 
   <style>
-    html, body { margin: 0; height: 100%; background: var(--tg-theme-bg-color, #0e1621); }
-    .spinner {
-      width: 34px; height: 34px; border-radius: 50%;
-      border: 3px solid rgba(255, 255, 255, .18); border-top-color: #2AABEE;
-      position: absolute; top: 50%; left: 50%; margin: -17px 0 0 -17px;
-      animation: spin .8s linear infinite;
+    :root {
+      --bg: #070b14;
+      --text: #f2f5fb;
+      --muted: rgba(242, 245, 251, .62);
+      --accent: #2AABEE;
+      --accent-2: #8b5cf6;
+      --ok: #22c55e;
     }
-    @keyframes spin { to { transform: rotate(360deg); } }
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0; height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      overflow: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Fondo: manchas de color difuminadas que se mueven despacio */
+    .glow {
+      position: fixed; border-radius: 50%; filter: blur(70px); opacity: .55;
+      animation: drift 14s ease-in-out infinite alternate;
+    }
+    .glow.a { width: 60vmax; height: 60vmax; background: var(--accent);   top: -25vmax; left: -20vmax; }
+    .glow.b { width: 55vmax; height: 55vmax; background: var(--accent-2); bottom: -25vmax; right: -20vmax; animation-delay: -7s; }
+    @keyframes drift { to { transform: translate(6vmax, 4vmax) scale(1.12); } }
+
+    .stage {
+      position: relative; z-index: 1; height: 100%;
+      display: flex; align-items: center; justify-content: center;
+      padding: max(24px, env(safe-area-inset-top)) 24px max(24px, env(safe-area-inset-bottom));
+    }
+    .card {
+      width: min(360px, 100%);
+      padding: 36px 28px 30px;
+      border-radius: 28px;
+      background: rgba(255, 255, 255, .06);
+      border: 1px solid rgba(255, 255, 255, .12);
+      backdrop-filter: blur(22px); -webkit-backdrop-filter: blur(22px);
+      box-shadow: 0 24px 60px rgba(0, 0, 0, .45);
+      text-align: center;
+      animation: rise .6s cubic-bezier(.2, .8, .2, 1) both;
+    }
+    @keyframes rise { from { opacity: 0; transform: translateY(18px) scale(.97); } }
+
+    /* Anillo de progreso con el icono en el centro */
+    .orb { position: relative; width: 128px; height: 128px; margin: 0 auto 22px; }
+    .orb > svg { position: absolute; inset: 0; transform: rotate(-90deg); }
+    .orb .track { stroke: rgba(255, 255, 255, .1); }
+    .orb .bar {
+      stroke: url(#grad); stroke-linecap: round;
+      stroke-dasharray: 339.3; stroke-dashoffset: 339.3;
+      transition: stroke-dashoffset 1s linear, stroke .3s;
+    }
+    .loading .orb > svg { animation: spin 1.4s linear infinite; }
+    .loading .orb .bar { stroke-dashoffset: 250; }
+    @keyframes spin { to { transform: rotate(270deg); } }
+
+    .icon {
+      position: absolute; inset: 18px; border-radius: 50%;
+      display: grid; place-items: center;
+      background: linear-gradient(145deg, var(--accent), var(--accent-2));
+      box-shadow: 0 0 40px rgba(42, 171, 238, .45);
+      font-size: 38px; font-weight: 700; font-variant-numeric: tabular-nums;
+      transition: background .4s, box-shadow .4s;
+    }
+    .icon svg { position: static; transform: none; width: 40px; height: 40px; }
+    .loading .icon { animation: pulse 1.6s ease-in-out infinite; }
+    @keyframes pulse { 50% { transform: scale(.94); box-shadow: 0 0 20px rgba(42, 171, 238, .3); } }
+
+    .done .icon { background: linear-gradient(145deg, #34d399, var(--ok)); box-shadow: 0 0 46px rgba(34, 197, 94, .5); }
+    .done .orb .bar { stroke: var(--ok); stroke-dashoffset: 0; }
+    .done .icon svg { animation: pop .45s cubic-bezier(.2, 1.6, .4, 1) both; }
+    @keyframes pop { from { transform: scale(0); } }
+
+    h1 { margin: 0 0 8px; font-size: 22px; letter-spacing: -.01em; }
+    p  { margin: 0; color: var(--muted); font-size: 15px; line-height: 1.45; }
+
+    .steps { display: flex; justify-content: center; gap: 8px; margin-top: 24px; }
+    .steps span {
+      width: 28px; height: 5px; border-radius: 99px;
+      background: rgba(255, 255, 255, .14);
+      transition: background .4s, width .4s;
+    }
+    .steps span.on { background: linear-gradient(90deg, var(--accent), var(--accent-2)); width: 40px; }
+    .done .steps span { background: var(--ok); }
+
+    .brand { margin-top: 22px; font-size: 12px; color: rgba(242, 245, 251, .38); letter-spacing: .08em; text-transform: uppercase; }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation: none !important; transition: none !important; }
+    }
   </style>
 </head>
 <body>
-  <div class="spinner"></div>
+  <div class="glow a"></div>
+  <div class="glow b"></div>
+
+  <main class="stage">
+    <section class="card loading" id="card">
+      <div class="orb">
+        <svg viewBox="0 0 120 120" width="128" height="128" aria-hidden="true">
+          <defs>
+            <linearGradient id="grad" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stop-color="#2AABEE"/>
+              <stop offset="1" stop-color="#8b5cf6"/>
+            </linearGradient>
+          </defs>
+          <circle class="track" cx="60" cy="60" r="54" fill="none" stroke-width="7"/>
+          <circle class="bar" id="bar" cx="60" cy="60" r="54" fill="none" stroke-width="7"/>
+        </svg>
+        <div class="icon" id="icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M12 4v11M7 10l5 5 5-5M5 20h14"/>
+          </svg>
+        </div>
+      </div>
+
+      <h1 id="title"></h1>
+      <p id="subtitle"></p>
+
+      <div class="steps" aria-hidden="true"><span class="on"></span><span></span><span></span></div>
+      <div class="brand">Downloader Pro</div>
+    </section>
+  </main>
 
   <script>
     const tg = window.Telegram && window.Telegram.WebApp;
     if (tg) {
       tg.ready();
       tg.expand();
+      if (tg.setHeaderColor) { try { tg.setHeaderColor("#070b14"); tg.setBackgroundColor("#070b14"); } catch (e) {} }
       if (tg.requestFullscreen) { try { tg.requestFullscreen(); } catch (e) {} }
     }
 
     const params = new URLSearchParams(window.location.search);
     const token = params.get("token") || "";
     const BOT_USERNAME = "videott_pro_bot";
-    // Monetag muestra un contador obligatorio de 15 segundos. Esperamos un
-    // segundo adicional antes de volver al bot.
-    const AD_SECONDS = 16;
+    // Segundos que se espera tras mostrar el anuncio antes de desbloquear la descarga.
+    // Antes eran 16 (el contador de Monetag es de 15 s); en prueba con 5 para ver si Monetag
+    // sigue contando la impresión. Si no la cuenta, volver a 16 y cambiar "5 s" en locales.py.
+    const AD_SECONDS = 5;
     const API_URL = "https://162-35-32-107.sslip.io/api/ad-complete";
+
+    // ---------- Textos e interfaz ----------
+    const userLang = (tg && tg.initDataUnsafe && tg.initDataUnsafe.user && tg.initDataUnsafe.user.language_code)
+      || navigator.language || "en";
+    const es = userLang.toLowerCase().startsWith("es");
+    const TEXT = es ? {
+      loading: ["Cargando anuncio", "Tu descarga se desbloquea al terminar."],
+      counting: ["Desbloqueando tu video", "Un momento más, ya casi está."],
+      done: ["¡Listo!", "Volviendo al bot, tu video ya se está descargando."],
+    } : {
+      loading: ["Loading ad", "Your download unlocks when it ends."],
+      counting: ["Unlocking your video", "Just a moment, almost there."],
+      done: ["All set!", "Going back to the bot, your video is downloading."],
+    };
+    document.documentElement.lang = es ? "es" : "en";
+
+    const card = document.getElementById("card");
+    const icon = document.getElementById("icon");
+    const bar = document.getElementById("bar");
+    const steps = document.querySelectorAll(".steps span");
+    const RING = 339.3;
+    const CHECK_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+
+    function setState(name) {
+      card.className = "card " + name;
+      document.getElementById("title").textContent = TEXT[name][0];
+      document.getElementById("subtitle").textContent = TEXT[name][1];
+      const step = { loading: 0, counting: 1, done: 2 }[name];
+      steps.forEach((s, i) => s.classList.toggle("on", i <= step));
+      if (tg && tg.HapticFeedback && name === "done") {
+        try { tg.HapticFeedback.notificationOccurred("success"); } catch (e) {}
+      }
+    }
+
+    function startCountdown(seconds) {
+      setState("counting");
+      let left = seconds;
+      bar.style.strokeDashoffset = RING;
+      const tick = () => {
+        icon.textContent = left;
+        bar.style.strokeDashoffset = RING * (left / seconds);
+        if (left-- <= 0) { clearInterval(timer); finish(); }
+      };
+      const timer = setInterval(tick, 1000);
+      tick();
+    }
+
+    function showDone() {
+      setState("done");
+      icon.innerHTML = CHECK_SVG;
+    }
+
+    setState("loading");
+
+    // ---------- Flujo del anuncio ----------
     let finished = false;
     async function finish() {
       if (finished) return;
@@ -55,13 +225,17 @@
           body: JSON.stringify({ token, initData: (tg && tg.initData) || "" }),
         });
         if (res.ok) {
-          if (tg && tg.disableClosingConfirmation) tg.disableClosingConfirmation();
-          if (tg && tg.close) tg.close();
+          showDone();
+          setTimeout(() => {
+            if (tg && tg.disableClosingConfirmation) tg.disableClosingConfirmation();
+            if (tg && tg.close) tg.close();
+          }, 900);
           return;
         }
       } catch (e) {}
 
       // Respaldo: volver al bot con /start verify_xxx.
+      showDone();
       const returnUrl = `https://t.me/${BOT_USERNAME}?start=verify_${encodeURIComponent(token)}`;
       if (tg && tg.openTelegramLink) {
         tg.openTelegramLink(returnUrl);
@@ -85,7 +259,7 @@
 
     try {
       show_11971068({ type: "start", ymid: token, timeout: 12 })
-        .then(() => setTimeout(finish, AD_SECONDS * 1000))
+        .then(() => startCountdown(AD_SECONDS))
         .catch(finish);
     } catch (e) {
       finish();
