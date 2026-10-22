@@ -148,10 +148,9 @@
     const params = new URLSearchParams(window.location.search);
     const token = params.get("token") || "";
     const BOT_USERNAME = "videott_pro_bot";
-    // Segundos que se espera tras mostrar el anuncio antes de desbloquear la descarga.
-    // Antes eran 16 (el contador de Monetag es de 15 s); en prueba con 5 para ver si Monetag
-    // sigue contando la impresión. Si no la cuenta, volver a 16 y cambiar "5 s" en locales.py.
-    const AD_SECONDS = 5;
+    // El contador de 15 s es de Monetag y no se puede cambiar. Su promesa se resuelve cuando
+    // el anuncio ya terminó, así que aquí solo se espera un momento para mostrar la cuenta atrás.
+    const AD_SECONDS = 2;
     const API_URL = "https://162-35-32-107.sslip.io/api/ad-complete";
 
     // ---------- Textos e interfaz ----------
