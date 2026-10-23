@@ -54,6 +54,8 @@
       animation: rise .6s cubic-bezier(.2, .8, .2, 1) both;
     }
     @keyframes rise { from { opacity: 0; transform: translateY(18px) scale(.97); } }
+    /* Mientras carga el anuncio no se muestra ninguna ventana: solo el fondo. */
+    .card.loading { visibility: hidden; animation: none; }
 
     /* Anillo de progreso con el icono en el centro */
     .orb { position: relative; width: 128px; height: 128px; margin: 0 auto 22px; }
@@ -148,9 +150,11 @@
     const params = new URLSearchParams(window.location.search);
     const token = params.get("token") || "";
     const BOT_USERNAME = "videott_pro_bot";
-    // El contador de 15 s es de Monetag y no se puede cambiar. Su promesa se resuelve cuando
-    // el anuncio ya terminó, así que aquí solo se espera un momento para mostrar la cuenta atrás.
-    const AD_SECONDS = 2;
+    // La promesa de Monetag se resuelve antes de que su contador de 15 s termine: con 2 s el
+    // anuncio se cerraba a mitad y Monetag no contaba la impresión. Se esperan los 15 s
+    // completos y la pestaña se cierra CLOSE_DELAY_MS después de llegar a 0.
+    const AD_SECONDS = 15;
+    const CLOSE_DELAY_MS = 1500;
     const API_URL = "https://162-35-32-107.sslip.io/api/ad-complete";
 
     // ---------- Textos e interfaz ----------
@@ -187,13 +191,15 @@
     }
 
     function startCountdown(seconds) {
+      clearTimeout(fallbackTimer);  // el anuncio respondió: ya no hace falta el respaldo de 45 s
       setState("counting");
       let left = seconds;
       bar.style.strokeDashoffset = RING;
       const tick = () => {
         icon.textContent = left;
         bar.style.strokeDashoffset = RING * (left / seconds);
-        if (left-- <= 0) { clearInterval(timer); finish(); }
+        if (left === 0) { clearInterval(timer); finish(); }
+        left--;
       };
       const timer = setInterval(tick, 1000);
       tick();
@@ -228,7 +234,7 @@
           setTimeout(() => {
             if (tg && tg.disableClosingConfirmation) tg.disableClosingConfirmation();
             if (tg && tg.close) tg.close();
-          }, 900);
+          }, CLOSE_DELAY_MS);
           return;
         }
       } catch (e) {}
@@ -254,7 +260,7 @@
     }
 
     // Respaldo: si el SDK queda abierto, el usuario no queda atrapado en la Mini App.
-    setTimeout(finish, 45000);
+    const fallbackTimer = setTimeout(finish, 45000);
 
     try {
       show_11971068({ type: "start", ymid: token, timeout: 12 })
